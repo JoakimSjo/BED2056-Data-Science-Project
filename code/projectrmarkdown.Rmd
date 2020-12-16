@@ -1,0 +1,808 @@
+---
+title: "Effect of Protests on Police-Related Fatalities in the United States"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+author:
+  Kamilla Bentsen,
+  Joakim Alslie, and
+  Joakim Sjohaug
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Un-comment and install packages if not already installed
+#install.packages("RCurl")
+#install.packages("tidyverse")
+#install.packages("lubridate")
+#install.packages("gsheet")
+#install.packages("raster")
+#install.packages("dplyr")
+#install.packages("spData")
+#install.packages("ggplot2")
+#install.packages("stats")
+#install.packages("Hmisc")
+
+# Open needed libraries
+library(RCurl)
+library(tidyverse)
+library(lubridate)
+library(gsheet)
+library(raster)
+library(dplyr)
+library(spData)
+library(ggplot2)
+library(stats)
+library(Hmisc)
+```
+
+## Introduction
+This report presents an analysis of data on the history of police violence in the United States from the past 20 years (2000-2019). Topics discussed include development of police violence in general and between different races, as well as a state-specific analysis which includes the occurrence of relevant protests in this time period. \ 
+
+## Overview and Motivation
+Police brutality has gained an increased attention in the media lately. The rise of the Black Lives Matter movement after the killing of George Floyd on may 25th this year has led to heated discussions on whether police violence at a large scale is a result of systematic racism. \  
+
+The aim of this project is to shed some light on police brutality in the United States and analyze the different fatality rates between the different races for the past 20 years. For this project, a special focus is put on the different fatality rates between the African-American and the White population. Additionally, we aim to analyze the occurrence of police violence in specific states with a history of protests against police brutality. \ 
+
+## Related Work
+The planning team of Mapping Police Violence has provided a website with an extensive analysis of police brutality in the United States^[https://mappingpoliceviolence.org/]. It contains a complete mapping of dates and the geographical position of police fatalities so far in 2020. The website is dynamic, which enables comparison between different cities or states. Their database is completely open for download. The website also has a link to the 2017 Police Violence Report^[https://policeviolencereport.org/], which covers an extensive analysis of police violence in 2017. \ 
+
+These analyses do, however, not show how police violence has developed over a longer term than a single year. Our analysis differs from these by including data from the past 20 years, leading to an analysis more rooted in the long term. \  
+
+The analysis of Mapping Police Violence shows that crime rates and police violence are independent variables. This means that police violence in general is not affected by the crime rates. We therefore use this as an argument for not taking crime rates into account when analyzing the collected data of police violence for the last 20 years. \  
+
+## Initial Questions
+We first aim to look at the trend of police-related fatalities between races throughout the whole United States in the years 2000-2019. We would like to see if there is any trend or changes in the rate of police fatalities in the years following large protests against police brutality. Since most protests have focused on police violence against African-Americans, we first wanted to visualize the proportion of African-Americans killed by police compared to their population in relation to other races to determine if there is a higher proportion of African-Americans killed by police, as protesters have claimed. \  
+
+After looking at the United States as a whole, we then want to see if there were any local changes to the amount of police-related fatalities in the specific states where the protests have occurred. Since there have been a large number of protests in 2020, we aim to determine how much effect, if any, protests have on systematically changing police behavior. \  
+
+Our analysis aims to answer the following questions for the nation as a whole, along with each state that the protests have occurred in: \ 
+
+1. Has the number of police fatalities per million people changed over time? \ 
+2. What is the growth rate of police-related fatalities over time? \ 
+3. How many total people are killed of each race each year? \ 
+4. How many fatalities are there of each race in the proportion to the population of that race? Is this different between races? \ 
+
+For the United States and each state we examine, we analyze if there is a change in the trend for each of these factors in the years following each protest. \ 
+
+### Experimental Method
+In this data science project, we have used an experimental method which Gaussian Engineering names "The Data Scientific Method" in their article^[https://www.gauseng.com/single-post/2019/02/14/A-Data-Scientific-Method] about experimental methods for data science projects. The Data Scientific Method is an iterative process that consists of 6 steps. Iterative means that after the six steps are done, it encourages one to seek feedback and act upon it by repeating the process again and even multiple times. The six stages of the process are: \ 
+
+1. _Identify_ - formulate the goal of the data science project and plan the project. \ 
+2. _Understand_ - get a feel of the data sets in question and ensure their quality. \ 
+3. _Process_ - perform steps processes such as "wrangling" and "cleaning" on the data sets to get them in a state ready for analyses. \ 
+4. _Analyze_ - explore, inspect, and model the data to discover patterns and relationships previously unknown. \ 
+5. _Conclude_ - with the results from the previous steps in hand, conclude and draw a reliable and valuable conclusion from the results. \ 
+6. _Communicate_ - the essential step. Formulate the findings in such a way that readers understand the conclusions obtained from the data \ 
+
+Applying this method, the group started with a workshop deciding the project and raising questions we wanted to answer with this project. Data sets were then gathered, understood, and reviewed to ensure that they were of the right quality and relevant to the project. \ 
+
+The group then started a process where the data was modified to be ready for analysis. In this stage, we had to alter the population data sets to create a new data set grouped by race and state only such that the total population for each race was obtained in each state. Also, we replaced numerical representations of states, e.g., "36" to "NY" for "New York" to make it more intuitive when examining the data set. A year column was appended on the fatality data set, and the date and race columns were altered to reflect the population data set in terms of the mentioned column values. \ 
+
+With the data sets ready for analysis, the group started to create data frames that held data to answer the questions mentioned in the report's introduction. The group explored the different ways to showcase the data through pie charts, bar and graph plots. From the plots, the group draws different conclusions to the mentioned questions. \ 
+
+A presentation was held for the entire class showcasing the results and how the results were obtained. The group got feedback on questions we could ask to discover unknown patterns from the data. E.g., one idea from the feedback was to look at how the fatalities growth rates changed based on protests and president election results. \ 
+
+The group argues that this method is reliable because it challenges the group to define concrete questions to answer early in the process and encourage them to understand the data sets used in the project. Besides, the process is an iterative process that enables seeking feedback and takes action from the input. \ 
+
+## Data
+This project has two public main sources for information, Fatal Encounters and United States Census Bureau. In this section a small description of each source and data set is given, and we show how we downloaded and manipulated the data frames.  \ 
+
+#### Fatal Encounters
+Fatal Encounters is an organization that aims to create a national search-able database about police brutality in the USA^[https://fatalencounters.org/]. They collect information in three ways; paid researchers, public records requests and crowd-sourced data. The data is available for anyone through an external link on their website^[https://docs.google.com/spreadsheets/d/1dKmaV_JiWcG8XBoRgP8b4e9Eopkpgt7FL7nyspvzAsE/edit#gid=0]. Each entry in the data set contains many details and the most important for this project is: location, race, state, and year. \ 
+
+Data about fatalities was downloaded directly from the Fatal Encounters website. Since this is a Google document that is updated weekly, the data frame will be updated with the most recent fatalities each time the code is run. The data frame includes a column with the date of each fatality, which we used to add a column containing just the year, since we do not do our analysis on a finer-scale than the year. Since the year 2020 is not over yet, we exclude this from our analysis and only use fatalities that occurred before 2020. We also updated the names of races and states to assure that we use the same names for these variables in this data frame and the population data frame.
+```{r fatality_data, message=FALSE, warning=FALSE}
+# Download data frame from fatalencounters.org
+df_fatalities_2000to2019 <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1dKmaV_JiWcG8XBoRgP8b4e9Eopkpgt7FL7nyspvzAsE/edit#gid=0")
+
+# Manipulate data frame
+df_fatalities_2000to2019_edited <- df_fatalities_2000to2019 %>%
+  rename("Date" = "Date of injury resulting in death (month/day/year)") %>%
+  mutate(Date = mdy(Date), Year = year(Date)) %>%
+  filter(Year < 2020) %>%
+  mutate(Race = dplyr::recode(Race,		
+                              "European-American/White" = "White",		
+                              "Hispanic/Latino" = "Hispanic",		
+                              "African-American/Black" = "African-American",		
+                              "Native American/Alaskan" = "Native American",		
+                              "Asian/Pacific Islander" = "Asian")) %>%
+  mutate(State = dplyr::recode(State,
+                               "AL" = "Alabama",
+                               "AK" = "Alaska",
+                               "AZ" = "Arizona",
+                               "AR" = "Arkansas",
+                               "CA" = "California",
+                               "CO" = "Colorado",
+                               "CT" = "Connecticut",
+                               "DE" = "Delaware",
+                               "DC" = "District of Columbia",
+                               "FL" = "Florida",
+                               "GA" = "Georgia",
+                               "HI" = "Hawaii",
+                               "ID" = "Idaho",
+                               "IL" = "Illinois",
+                               "IN" = "Indiana",
+                               "IA" = "Iowa",
+                               "KS" = "Kansas",
+                               "KY" = "Kentucky",
+                               "LA" = "Louisiana",
+                               "ME" = "Maine",
+                               "MD" = "Maryland",
+                               "MA" = "Massachusetts",
+                               "MI" = "Michigan",
+                               "MN" = "Minnesota",
+                               "MS" = "Mississippi",
+                               "MO" = "Missouri",
+                               "MT" = "Montana",
+                               "NE" = "Nebraska",
+                               "NV" = "Nevada",
+                               "NH" = "New Hampshire",
+                               "NJ" = "New Jersey",
+                               "NM" = "New Mexico",
+                               "NY" = "New York",
+                               "NC" = "North Carolina",
+                               "ND" = "North Dakota",
+                               "OH" = "Ohio",
+                               "OK" = "Oklahoma",
+                               "OR" = "Oregon",
+                               "PA" = "Pennsylvania",
+                               "RI" = "Rhode Island",
+                               "SC" = "South Carolina",
+                               "SD" = "South Dakota",
+                               "TN" = "Tennessee",
+                               "TX" = "Texas",
+                               "UT" = "Utah",
+                               "VT" = "Vermont",
+                               "VA" = "Virginia",
+                               "WA" = "Washington",
+                               "WV" = "West Virginia",
+                               "WI" = "Wisconsin",
+                               "WY" = "Wyoming"))
+
+```
+
+Here is an example of the format of the Fatality data frame.
+```{r head_df_fatality, echo=FALSE}
+head(df_fatalities_2000to2019_edited) %>%
+  dplyr::select(Name, Gender, Age, Race, State, Year)
+```
+
+#### United States Census Bureau
+The bureau provides data sets about the population in the USA. Each decade a national census is completed, and a data set is made available afterward. Thus, we only have one decade with the USA's actual population, and the last decade is a data set with a population estimate for each year. A detailed description^[https://www2.census.gov/programs-surveys/popest/technical-documentation/file-layouts/2010-2019/sc-est2019-alldata6.pdf] about the data set is provided by the bureau. \ 
+
+Both data sets (actual and estimated population) groups the population by age, gender, race, and state. For our analysis, the total population of each race is the most interesting data point. \ 
+
+Two data frames were downloaded from the United States Census Bureau, one for 2000-2010 and one for 2010-2019. These had the same format so they were edited in the same manner. We filtered out variables that caused duplicates in the total population estimate. For example, when the SEX variable was equal to 0 it showed the population including both males and females, when it was equal to 1 it included only males, and when equal to 2 it included only females. Therefore, we only wanted to include the rows where SEX was equal to 0, so not every person was counted twice when we find the sum of the population column. This was a problem while we were doing our analyses and found that the total population for each year was double what it should be, so we had to come back to update the data frame. We then merged these two data frames into one that included all 20 years. We then updated the names of races and states to match the fatality data frame.
+```{r population_data, message=FALSE, warning=FALSE}
+# Download data frames directly from the United States Census Bureau
+df_population_2000to2010 <- read.csv(text = getURL("https://www2.census.gov/programs-surveys/popest/datasets/2000-2010/intercensal/county/co-est00int-sexracehisp.csv"))
+
+df_population_2010to2019 <- read.csv(text = getURL("https://www2.census.gov/programs-surveys/popest/tables/2010-2019/state/asrh/sc-est2019-alldata6.csv"))
+
+# Find the population grouped by race and state
+df_population_2000to2010_edited <- df_population_2000to2010 %>%
+  filter(SEX == 0, ORIGIN == 0) %>%
+  group_by(STATE, RACE) %>% 
+  rename("State" = "STATE", "Race" = "RACE") %>%
+  dplyr::summarize(pop2000 = sum(POPESTIMATE2000), 
+                   pop2001=sum(POPESTIMATE2001),
+                   pop2002=sum(POPESTIMATE2002),
+                   pop2003=sum(POPESTIMATE2003),
+                   pop2004=sum(POPESTIMATE2004),
+                   pop2005=sum(POPESTIMATE2005),
+                   pop2006=sum(POPESTIMATE2006),
+                   pop2007=sum(POPESTIMATE2007),
+                   pop2008=sum(POPESTIMATE2008),
+                   pop2009=sum(POPESTIMATE2009))
+
+df_population_2010to2019_edited <- df_population_2010to2019 %>%
+  filter(SEX == 0, ORIGIN == 0) %>%
+  group_by(STATE, RACE) %>%
+  rename("State" = "STATE", "Race" = "RACE") %>%
+  dplyr::summarize(pop2010 = sum(CENSUS2010POP),
+                   pop2011=sum(POPESTIMATE2011),
+                   pop2012=sum(POPESTIMATE2012),
+                   pop2013=sum(POPESTIMATE2013),
+                   pop2014=sum(POPESTIMATE2014),
+                   pop2015=sum(POPESTIMATE2015),
+                   pop2016=sum(POPESTIMATE2016),
+                   pop2017=sum(POPESTIMATE2017),
+                   pop2018=sum(POPESTIMATE2018),
+                   pop2019=sum(POPESTIMATE2019))
+
+#Merge to one population date frame
+df_population_2000to2019 <- merge(df_population_2000to2010_edited, df_population_2010to2019_edited) %>%
+  mutate(Race = dplyr::recode(Race,		
+                              "1" = "White",
+                              "2" = "African-American",
+                              "3" = "Native American",
+                              "4" = "Asian",
+                              "5" = "Pacific Islander",
+                              "6" = "Two or more races")) %>%
+  mutate(State = dplyr::recode(State,
+                               "1" = "Alabama",
+                               "2" = "Alaska",
+                               "4" = "Arizona",
+                               "5" = "Arkansas",
+                               "6" = "California",
+                               "8" = "Colorado",
+                               "9" = "Connecticut",
+                               "10" = "Delaware",
+                               "11" = "District of Columbia",
+                               "12" = "Florida",
+                               "13" = "Georgia",
+                               "15" = "Hawaii",
+                               "16" = "Idaho",
+                               "17" = "Illinois",
+                               "18" = "Indiana",
+                               "19" = "Iowa",
+                               "20" = "Kansas",
+                               "21" = "Kentucky",
+                               "22" = "Louisiana",
+                               "23" = "Maine",
+                               "24" = "Maryland",
+                               "25" = "Massachusetts",
+                               "26" = "Michigan",
+                               "27" = "Minnesota",
+                               "28" = "Mississippi",
+                               "29" = "Missouri",
+                               "30" = "Montana",
+                               "31" = "Nebraska",
+                               "32" = "Nevada",
+                               "33" = "New Hampshire",
+                               "34" = "New Jersey",
+                               "35" = "New Mexico",
+                               "36" = "New York",
+                               "37" = "North Carolina",
+                               "38" = "North Dakota",
+                               "39" = "Ohio",
+                               "40" = "Oklahoma",
+                               "41" = "Oregon",
+                               "42" = "Pennsylvania",
+                               "44" = "Rhode Island",
+                               "45" = "South Carolina",
+                               "46" = "South Dakota",
+                               "47" = "Tennessee",
+                               "48" = "Texas",
+                               "49" = "Utah",
+                               "50" = "Vermont",
+                               "51" = "Virginia",
+                               "53" = "Washington",
+                               "54" = "West Virginia",
+                               "55" = "Wisconsin",
+                               "56" = "Wyoming"))
+```
+
+Here is an example of the format of the Population data frame. As shown, it includes the number of people of each race in each state by year. The columns after 2005 were excluded for visual purposes, however, the data frame includes columns with the yearly data up to 2019.
+```{r head_df_population, echo=FALSE}
+head(df_population_2000to2019) %>%
+  dplyr::select(State, Race, pop2000, pop2001, pop2002, pop2003, pop2004, pop2005)
+
+```
+
+#### Protests
+Information about when protests occurred and the background behind these protests was obtained from an article from Bloomberg News written in June 2020.^[https://www.bloomberg.com/news/articles/2020-06-09/a-history-of-protests-against-police-brutality].
+
+
+## Analysis 
+### National-Level Analysis
+The following analysis is done on a national level, meaning the number of fatalities throughout the entire United States is taken into account, regardless of geographical position within the country itself. This is necessary to do to get a good overview of the development of police violence before analyzing more specific developments within specific states. \ 
+
+#### Fatality Trend
+The first graph shows the number of fatalities per million people in the United States from 2000-2019. This was done by first creating a data frame that included the total population in the United States each year and the total number of fatalities for each year. Then, the proportion of fatalities per million people for each year was calculated by dividing the number of fatalities by the population and multiplying by a million. 
+```{r code_fig1, message=FALSE, warning=FALSE}
+
+# Function to create a data frame with the proportion of total fatalities to the total population for each year
+make_dataframe_by_year <- function(){
+  pop_df <- data_frame()
+  
+  for(year in 2000:2019){
+    popyear <- paste("pop", year, sep = "")
+    
+    tmp <- df_population_2000to2019 %>%
+      dplyr::select(Race, popyear) %>%
+      rename("Pop" = popyear) %>%
+      mutate(Year = year, Population = sum(Pop)) %>%
+      dplyr::select(Year, Population) %>%
+      unique()
+    
+    pop_df <- rbind(pop_df, tmp)
+  }
+  
+  fat_df <- df_fatalities_2000to2019_edited %>%
+    group_by(Year) %>%
+    dplyr::summarize(Fatalities = n())
+  
+  new_df <- merge(pop_df, fat_df) %>%
+    mutate(Proportion = (Fatalities/Population)*1000000)
+  
+  return(new_df)
+}
+
+# Create a data frame with the proportion of total fatalities by population each year
+df_totalpropfat <- make_dataframe_by_year()
+
+
+# Plot: Number of fatalities per million people over time
+plot_proportion_fatalities <- df_totalpropfat %>%
+  ggplot(aes(x=Year, y=Proportion)) +
+  geom_line() +
+  theme_minimal() +
+  geom_vline(xintercept = c(2006, 2011, 2014, 2015, 2016), linetype = "dashed") +
+  labs(title="Police-Related Fatalites per Million People", 
+       subtitle="United States, 2000-2019",
+       caption = "Figure 1. This graphs shows the number of police-related fatalities per million people each year in the
+       United States from 2000-2019. The vertical dashed lines represent the years where there were 
+       major protests against police brutality in the United States.",
+       y = "Number of Fatalities") +
+  theme(plot.caption = element_text(hjust = 0))
+```
+
+The second graph shows the growth rate of the number of police fatalities since the previous year. This was done by finding the change in the number of fatalities per million people since the previous year, and the growth rate for each year was calculated by dividing the change by the number of fatalities per million in the previous year, and then multiplying by 100 to obtain the percentage. 
+```{r code_fig2, message=FALSE, warning=FALSE}
+# Plot: Fatality growth rate
+plot_growthrate <- df_totalpropfat %>%
+  mutate(Previous_Year = lag(Proportion, 1), 
+         Change = Proportion - Previous_Year, 
+         Growth_Rate = (Change/Previous_Year)*100) %>%
+  ggplot(aes(x = Year, y = Growth_Rate)) +
+  geom_line() +
+  theme_minimal() +
+  geom_vline(xintercept = c(2006, 2011, 2014, 2015, 2016), linetype = "dashed") +
+    labs(title="Growth Rate of Police-Related Fatalities per Year",
+       subtitle = "United States, 2000-2019",
+       caption = "Figure 2. This graph shows the growth rate of police-related fatalities per million people compared to the previous year 
+       in the United States from 2000-2019. The vertical dashed lines represent the years where there were major 
+       protests against police brutality in the United States.",
+       y="Growth Rate since Previous Year") +
+  theme(plot.caption = element_text(hjust = 0))
+```
+
+```{r total_growth, echo=FALSE, include=TRUE, message=FALSE, warning=FALSE, fig.show="hold", out.width="50%"}
+plot_proportion_fatalities
+plot_growthrate
+```
+
+<div style="margin-bottom:10px;"> </div>
+
+The two plots show the development of total number of police-related fatalities per million people from 2000 to 2019 (Fig. 1) and the corresponding growth rate (Fig. 2). The graphs show that the total number of police-related fatalities has been increasing steadily for the past 20 years, despite a varying growth rate. In 2000 the number of fatality cases per million habitats were slightly above 3 cases, but by 2019 it increased to slightly above 6 cases (Fig. 1). The dashed vertical lines show the years where major protests occurred. Although the total fatalities per million continued increasing after the protests in 2006 and 2011, the growth rate decreased for a short period after them, before increasing again. The period of 2014-2016 had major protests every year, and the number of fatalities was decreasing for that period. However, the number of fatalities started increasing each year after that, implying that the protests did not have a long-term effect on police brutality.  \ 
+
+#### Fatality Trends Between Races
+The next goal is to analyze the difference in fatality rates between races for the past 20 years, and if protests have had an effect on any of them. 
+
+The first plot shows the total number of fatalities of each race each year. This was done by finding the sum of fatalities of all states for each race.
+```{r code_total_races}
+# Plot: Total fatalities by race
+plot_total_fatalities_race_line <- df_fatalities_2000to2019_edited %>%
+  group_by(Race, Year) %>%
+  count(Race) %>%
+  ungroup() %>%
+  ggplot(aes(x=Year, y=n, group=Race)) +
+  geom_line(aes(color=Race)) +
+  theme_minimal() +
+  geom_vline(xintercept = c(2006, 2011, 2014, 2015, 2016), linetype = "dashed") +
+  scale_color_manual(values = c("black", "dodgerblue", "darkorange", "darkviolet", "brown", "darkgreen", "tan"), name = "") +
+  labs(title="Police-Related Fatalites by Race", 
+       subtitle="United States, 2000-2019",
+       caption = "Figure 3. This graph shows the number of police-related fatalities by race each year in the 
+       United States from 2000-2019. The vertical dashed lines represent the years where there 
+       were major protests against police brutality in the United States.",
+       y = "Number of Fatalities") +
+  theme(plot.caption = element_text(hjust = 0))
+
+```
+
+```{r total_races, echo=FALSE, include=TRUE, message=FALSE, warning=FALSE, fig.align="center"}
+plot_total_fatalities_race_line
+
+```
+
+<div style="margin-bottom:10px;"> </div>
+
+The figure shows that the White, African-American and the Hispanic populations have an increasing number of cases of police-related fatalities from the past 20 years. The Middle Eastern, Native American and Asian population has, however, remained low and stable. It shows that the White is the race with the highest number of fatalities, followed by African-American and Hispanic (Fig. 3). The protests in 2006 and 2011 appear to have had no effect on the number of fatalities. During the period of 2014-2016 when there were protests, the number of fatalities for Whites, African-Americans and Hispanic appear to become more stable rather than increase. However, this is around the same time when the number of "Race unspecified" cases increases, meaning that the victims' race is less reported. This is unsettling because the cases of the most represented races starts to flatten out at the same time, which makes it more difficult to distinguish between the different races for that period. This also makes it hard to determine if the protests had any part in stopping the increase in fatalities, since there are many victims whose race is unknown. \
+
+The next graph examines the number of fatalities per million people of each race. This was done by finding the total number of fatalities by race and the total population of each race. The number of fatalities per million people was calculated by dividing the number of fatalities by the population of a specific race, and multiplying by a million. This graph only includes White, African-American, Asian, and Native American since those are the only races that are included in both the Fatality and the Population data frame. \
+```{r code_pop_races}
+# Function to create a data frame including the number of fatalities per million people by race
+make_dataframe_by_race_year <- function(){
+  races <- list("White", "African-American", "Asian", "Native American")
+  new_df <- data_frame()
+  
+  for(year in 2000:2019){
+    popyear <- paste("pop", year, sep = "")
+    
+    for(race in races){
+      
+      tmp_pop <- df_population_2000to2019 %>%
+        dplyr::select(Race, popyear) %>%
+        filter(Race == race) %>%
+        rename("Pop" = popyear) %>%
+        mutate(Year = year, Population = sum(Pop)) %>%
+        dplyr::select(Race, Year, Population) %>%
+        unique()
+      
+      tmp_fat <- df_fatalities_2000to2019_edited %>%
+        group_by(Year, Race) %>%
+        filter(Race == race, Year == year) %>%
+        mutate(Fatalities = n()) %>%
+        dplyr::select(Race, Year, Fatalities) %>%
+        unique()
+      
+      # Number of fatalities per 1,000,000 people
+      # Formula: (# fatalities by race/Population by race) * 1000000
+      tmp <- merge(tmp_pop, tmp_fat) %>%
+        mutate(Proportion = (Fatalities/Population)*1000000)
+      
+      new_df <- rbind(new_df, tmp)
+    }
+  }
+  
+  return(new_df)
+} 
+
+
+# Create a data frame for each year with the proportion of number of fatalities
+# over the number of people of that race per year
+df_totalpropfatbyraceyear <- make_dataframe_by_race_year()
+
+# Plot: Number of fatalities per million people by race
+plot_proportion_fatalities_race <- df_totalpropfatbyraceyear %>%
+  ggplot(aes(x=Year, y =Proportion, group=Race)) +
+  geom_line(aes(color=Race)) +
+  theme_minimal() +
+  geom_vline(xintercept = c(2006, 2011, 2014, 2015, 2016), linetype = "dashed") +
+  scale_color_manual(values = c("black", "dodgerblue", "brown", "tan"), name = "") +
+  labs(title="Number of Police-Related Fatalities per Million People by Race",
+       subtitle="United States, 2000-2019",
+       caption = " Figure 4. This graph shows the number of police-related fatalities per million people of each race
+       per year in the United States from 2000-2019. The proportion was found by taking the number
+       of fatalities of a race over the population of that race. The vertical dashed lines represent 
+       the years where there were major protests against police brutality in the United States.",
+       y = "Number of Fatalites per Million People") +
+  theme(plot.caption = element_text(hjust = 0))
+
+```
+
+```{r population_races, echo=FALSE, include=TRUE, message=FALSE, warning=FALSE, fig.align="center"}
+  plot_proportion_fatalities_race
+
+```
+
+<div style="margin-bottom:10px;"> </div>
+
+The Asian and White population has barely had any increase in the number of fatalities for the past 20 years. The almost flat curve of the White population is an indication that the increase in total number of fatalities (Fig. 3) is a result of population growth. The Native American population has several spikes, but an increase in the number of fatalities from 2000 to 2017 is clear. The number of cases did, however, decrease heavily from 2017 to 2019. The African-American population stands out among the rest, as the number of fatalities has increased from around 4 cases per million people to up to almost 10 cases. This shows that the cases have more than doubled in the last 20 years! Even more so, the number of cases for the population peaks in 2013 at almost 12!
+As with the previous plots, the protests in 2006 and 2011 did not appear to have any effect on the proportion of fatalities on any races either. In 2014-2016, the proportion of African-American fatalities appeared to decrease and remain constant afterwards. This indicates that the protests during that period possibly had an effect in stopping the constant growth in the proportion of African-American fatalities. However, the proportion of African-American fatalities still remains much higher than all of the other races. \ 
+
+This next plot shows a similar point as Figure 4, except focused on 2019. For each race it shows their percentage of the population and their percentage of the population. 
+```{r code_bar_plot}
+# Function to create a data frame with % fatalities and % population of races in a given year
+make_dataframe_percent_fat_pop <- function(year){
+  popyear <- paste("pop", year, sep = "")
+  
+  pop_df <- df_population_2000to2019 %>%
+    rename("Pop" = popyear) %>%
+    mutate(TotalPop = sum(Pop)) %>%
+    group_by(Race) %>%
+    mutate(TotalRace = sum(Pop)) %>%
+    mutate("% Population" = TotalRace/TotalPop) %>%
+    dplyr::select(Race, "% Population") %>%
+    unique()
+  
+  fat_df <- df_fatalities_2000to2019_edited %>%
+    filter(Year == year) %>%
+    mutate(TotalFat = sum(Year == year)) %>%
+    group_by(Race) %>%
+    mutate(TotalRace = n()) %>%
+    mutate("% Fatalities" = TotalRace/TotalFat) %>%
+    dplyr::select(Race, "% Fatalities") %>%
+    unique()
+  
+  new_df <- merge(fat_df, pop_df) %>%
+    gather(Variable, Percent, -Race)
+  
+  return(new_df)
+}
+
+
+# Create a data frame with the % fatalities and % of population of each race in 2019
+df_percent_fatpop <- make_dataframe_percent_fat_pop(2019)
+
+# % population vs % fatalities of races in 2019
+plot_percentpopfat <- df_percent_fatpop %>%
+  ggplot(aes(x = Race, y = Percent*100, fill = Variable)) +
+  geom_col(position = position_dodge()) +
+  theme_minimal() +
+  labs(title="Percent Population vs. Percent Police-Related Fatalities by Race",
+       subtitle = "United States, 2019",
+       caption = "Figure 5. This chart shows the percentage of police-related fatalities and the 
+       percentage of the population that each race occupies for the year 2019.",
+       y = "Percent") +
+  theme(plot.caption = element_text(hjust = 0))
+
+```
+```{r bar_plot, echo=FALSE, include=TRUE, message=FALSE, warning=FALSE, fig.align="center"}
+  plot_percentpopfat
+
+```
+
+<div style="margin-bottom:10px;"> </div>
+
+In a world of complete equality the percentage of police-related fatalities for each race should correspond to the said races population. The plot, however, shows that the White population is underrepresented in the number of police-related fatalities (Fig. 5). This is clear because they take up 76% of the population, but only 36% of fatalities. The Asian population is underrepresented as well. The African-American population is, on the contrary, over-represented as they take up around 13% of the population, but around 24% of fatalities. Our data from from Figure 4 and 5 both show what protesters have been claiming: that African-Americans are killed at a much higher rate than other races by police, suggesting possible systematic racism. \ 
+
+### State-Specific Analysis
+The following analysis is done for specific states in the United States where large protests were arranged somewhere in the period from 2000 to 2019. This enables us to compare how the protests impacted the development of police-related fatalities within the state and on a national level. The states included in this analysis include New York, Missouri, Maryland, Louisiana, and Minnesota. \ 
+
+The plots for each state are similar to the plots created on the national level. For each state we focus on the number of fatalities per million people and the growth rate, along with the number of fatalities per million by race. Many of the states were lacking in data for Asian, Hispanic, and Native-American fatalities or population, so we place our focus on only comparing Whites and African-Americans. All of the protests we cover were all protesting against systematic racism and police brutality against African-Americans, therefore, it is fitting to focus on them. We discuss the protests that have occurred in each state, and determine if the protests had any effect on police-related fatalities in that state. \
+
+To find the number of fatalities per million people in each state, we found the total number of fatalities and population grouped by state. We found the number of fatalities per state divided by that state's population, and multiplied it by a million. The growth rate was found using the same method as before, except with only the data from a specific state.
+```{r code_state_plots, message=FALSE, warning=FALSE}
+# Function to create a data frame with the number of fatalities per million grouped by year and state
+make_dataframe_by_year_state <- function(){
+  pop_df <- data_frame()
+  
+  for(year in 2000:2019){
+    popyear <- paste("pop", year, sep = "")
+    
+    tmp <- df_population_2000to2019 %>%
+      rename("Pop" = popyear) %>%
+      group_by(State) %>%
+      mutate(Year = year, Population = sum(Pop)) %>%
+      dplyr::select(State, Population, Year) %>%
+      unique()
+    
+    pop_df <- rbind(pop_df, tmp)
+  }
+  
+  fat_df <- df_fatalities_2000to2019_edited %>%
+    group_by(State, Year) %>%
+    dplyr::summarize(Fatalities = n()) %>%
+    dplyr::select(State, Year, Fatalities) %>%
+    unique()
+  
+  new_df <- merge(pop_df, fat_df) %>%
+    mutate(Proportion = (Fatalities/Population)*1000000)
+  
+  return(new_df)
+  
+}
+
+# Create a data frame with the number of fatalities per million grouped by year and state
+df_propbyyearstate <- make_dataframe_by_year_state()
+
+# Function to create a plot for the number of fatalities per million people in a specific state
+createplot_propfat_state <- function(state, year_vec, fig_num){
+  return(df_propbyyearstate %>%
+    filter(State == state) %>%
+    ggplot(aes(x=Year, y=Proportion)) +
+    geom_line() +
+    theme_minimal() +
+    geom_vline(xintercept = year_vec, linetype = "dashed") +
+    labs(title="Number of Police-Related Fatalities per Million People by Race",
+        subtitle=paste0(state, ", ", "2000-2019"),
+        caption = paste0("Figure ", as.character(fig_num), ". This graph shows the number of police-related fatalities per million people of each race
+        per year in the state of ", state, " from 2000-2019. The proportion was found by taking the number
+        of fatalities of a race over the population of that race.The vertical dashed lines represent the 
+        years where there were major protests against police brutality in the state of ", state, "."),
+        y = "Number of Fatalites per Million People") +
+    theme(plot.caption = element_text(hjust = 0)))
+}
+
+# Function to create a plot for the growth rate of total fatalities for a state
+createplot_growthrate_state <- function(state, year_vec, fig_num){
+  return(df_propbyyearstate %>%
+    filter(State == state) %>%
+    mutate(Previous_Year = lag(Proportion, 1), 
+          Change = Proportion - Previous_Year, 
+          Growth_Rate= (Change/Previous_Year)*100) %>%
+    ggplot(aes(x = Year, y = Growth_Rate)) +
+    geom_line() +
+    theme_minimal() +
+    geom_vline(xintercept = year_vec, linetype = "dashed") +
+    labs(title="Growth Rate of Police Fatalities per Year",
+        subtitle = paste0(state, ", ", "2000-2019"),
+        caption = paste0("Figure ", as.character(fig_num), ". This graph shows the growth rate of police-related fatalities compared to the previous year in the
+        state of ", state, " from 2000-2019. The vertical dashed lines represent the years where there 
+        were major protests against police brutality in the state of ", state, "."),
+        y="Percent Growth since Previous Year") +
+    theme(plot.caption = element_text(hjust = 0)))
+}
+
+# Function to create a data frame with the number of fatalities per million grouped by year, race, and state
+make_dataframe_by_year_race_state <- function(){
+  races <- list("White", "African-American", "Asian", "Native American")
+  new_df <- data_frame()
+  
+  for(year in 2000:2019){
+    popyear <- paste("pop", year, sep = "")
+    
+    for(race in races){
+      pop_df <- df_population_2000to2019 %>%
+        filter(Race == race) %>%
+        mutate(Year = year) %>%
+        dplyr::select(State, Race, popyear, Year) %>%
+        rename("Population" = popyear)
+  
+  
+    fat_df <- df_fatalities_2000to2019_edited %>%
+      group_by(State, Year, Race) %>%
+      dplyr::summarize(Fatalities = n()) %>%
+      filter(Year == year, Race == race)
+    
+  # Number of fatalities per 1,000,000 people
+  # Formula: (# fatalities by race/Population by race) * 1000000
+  tmp <- merge(pop_df, fat_df) %>%
+    mutate(Proportion = (Fatalities/Population)*1000000)
+  
+  new_df <- rbind(new_df, tmp)
+    }
+  }
+  return(new_df)
+}
+
+# Create a data frame for with the number of fatalities per million grouped by race in each state
+df_propfatbystate <- make_dataframe_by_year_race_state()
+
+# Function to create a plot for the proportion of fatalities by race in a specific state
+createplot_raceproportion_state <- function(state, year_vec, fig_num){
+  return(df_propfatbystate %>%
+    filter(State == state) %>%
+    filter(Race == "African-American" | Race == "White") %>%
+    ggplot(aes(x=Year, y =Proportion, group=Race)) +
+    geom_line(aes(color=Race)) +
+    theme_minimal() +
+    geom_vline(xintercept = year_vec, linetype = "dashed") +
+    scale_color_manual(values = c("black","tan"), name = "") +
+    labs(title="Number of Police-Related Fatalities per Million People by Race",
+        subtitle=paste0(state, ", ", "2000-2019"),
+        caption = paste0("Figure ", as.character(fig_num), ". This graph shows the number of police-related fatalities per million people of each race
+        per year in the state of ", state, " from 2000-2019. The proportion was found by taking the number
+        of fatalities of a race over the population of that race.The vertical dashed lines represent the 
+        years where there were major protests against police brutality in the state of ", state, "."),
+        y = "Number of Fatalites per Million People") +
+    theme(plot.caption = element_text(hjust = 0)))
+}
+```
+
+
+### New York
+```{r new_york_growth, echo=FALSE, include=TRUE, message=FALSE, warning=FALSE, fig.show="hold", out.width="50%"}
+state <- "New York"
+protest_years <- c(2006, 2014)
+
+# Number of fatalities per million people - New York
+createplot_propfat_state(state, protest_years, 6)
+
+# Growth rate of total fatalities - New York
+createplot_growthrate_state(state, protest_years, 7)
+```
+<div style="margin-bottom:10px;"> </div>
+```{r new_york_races, echo=FALSE, include=TRUE, message=FALSE, warning=FALSE, fig.align="center"}
+# Proportion of fatalities by race - New York
+createplot_raceproportion_state(state, protest_years, 8)
+```
+
+<div style="margin-bottom:10px;"> </div>
+
+In New York, protests against police brutality occurred in the years 2006 and 2014. In 2006, the court findings of three police officers not guilty in the shooting of three African-American men was the cause of peaceful protests. The total amount of police-related fatalities did not decrease in the years following this protest; in fact, it continued increasing. However, the proportion of African-Americans killed by police drastically dropped in 2007, suggesting that there was possibly less systematic racism occurring after the protest. This, however, did not last, and the proportion of African-Americans killed by police started rising again in 2008.
+In 2014, an African-American man died after being held in a chokehold by a police officer. After the officer was not indicted for this, the saying “I can’t breathe” was birthed and protests against the decision went on for several nights. The graphs show that total police-related fatalities and the proportion of African-Americans killed by police decreased after 2014. However, they had already been decreasing since 2013, so it is hard to conclude if the continuing decline happened in part because of the protests. \ 
+
+Due to the protests in 2014, the New York Assembly had written a bill named after the victim that makes the use of chokeholds illegal for police. This was not passed until June of 2020. It will be interesting to see in future years if this bill has any effect on police-related fatalities in New York in the coming years. \ 
+
+### Missouri
+```{r missouri_growth, echo=FALSE, include=TRUE, message=FALSE, warning=FALSE, fig.show="hold", out.width="50%"}
+state <- "Missouri"
+protest_years <- c(2011, 2014)
+
+# Number of fatalities per million people - Missouri
+createplot_propfat_state(state, protest_years, 9)
+
+# Growth rate of total fatalities - Missouri
+createplot_growthrate_state(state, protest_years, 10)
+
+```
+<div style="margin-bottom:10px;"> </div>
+```{r missouri_races, echo=FALSE, include=TRUE, message=FALSE, warning=FALSE,  fig.align="center"}
+# Proportion of fatalities by race - Missouri
+createplot_raceproportion_state(state, protest_years, 11)
+```
+
+<div style="margin-bottom:10px;"> </div>
+
+In Missouri, two major protests have occurred during the past 20 years, one in 2011 and a second in 2014. \ 
+
+The plots show an increasing number of fatalities in advance of both protests. This is occurring both for total fatalities, and for fatalities within the White and the African American population. The outcome of the two protests are, however, a bit different. Based on the results from Missouri alone, it seems that the protests may have had an effect on the growth rate of police fatalities, as it decreased in the aftermath of both of the protests. Despite this, the occurrence is not reliable evidence alone, as the growth rate tends to spike every other year. \ 
+
+The protest in 2011 was caused when the police shot and killed Anthony Lamar Smith. This led to protests in St. Louis that lasted for several days. In the aftermath, the family of Lamar Smith settled a lawsuit with the St. Louis Police for 900 000 dollars. The family gained another 500 000 dollars a year later after a re-opening of the case. \ 
+
+The protest in 2014 happened after Michael Brown was shot 12 by a police officer after leaving a convenience store. Michael Brown was unarmed and the police officer was never charged. The protests in the aftermath were violent and led to the police using tear-gas against the crowd of demonstrators. Another set of protests happened after 12-year-old Tamir Rice was shot not long after Browns murder. In the aftermath the 1033 was canceled by president Obama (although it was renewed in 2017 by president Trump). Black Lives Matter also launched Campaign zero in 2015, after the protests. \ 
+
+The aftermath of the protests in 2014 could explain the decrease in police-related fatality cases after the protests. Despite this, the plots show a big increase in the number of fatalities from 2015 to 2019. This indicates that the protests in Missouri alone did not have a large effect on the fatality rate in the long term. \ 
+
+### Maryland
+```{r maryland_growth, echo=FALSE, include=TRUE, message=FALSE, warning=FALSE, fig.show="hold", out.width="50%"}
+state <- "Maryland"
+protest_years <- c(2015)
+
+# Number of fatalities per million people - Maryland
+createplot_propfat_state(state, protest_years, 12)
+
+# Growth rate of total fatalities - Maryland
+createplot_growthrate_state(state, protest_years, 13)
+```
+<div style="margin-bottom:10px;"> </div>
+```{r maryland_races, echo=FALSE, include=TRUE, message=FALSE, warning=FALSE, fig.align="center"}
+# Proportion of fatalities by race - Maryland
+createplot_raceproportion_state(state, protest_years, 14)
+
+```
+
+<div style="margin-bottom:10px;"> </div>
+
+Maryland has had only one protest in the last 20 years. The protest occurred in 2015 after the mysterious death of Freddie Gray. Freddie died one week after being arrested because of severe damage to his neck. The mysterious death made the protests erupt, and the citizens of Maryland demanded answers and insight into the incident's investigation. \ 
+
+The plots about police fatalities in Maryland show that the state had decreased police fatalities at the start of 2000. Following the decrease, a stable increase in total fatalities is observed until 2007, where they have a drop in fatalities before a drastic increase follows. A drastic increase is seen until the protest. After the mentioned protests, the graphs show that the total number of fatalities per million increases but that the fatalities of African-Americans decreases and the fatalities of White people increases. \ 
+
+### Louisiana
+```{r louisiana_growth, echo=FALSE, include=TRUE, message=FALSE, warning=FALSE, fig.show="hold", out.width="50%"}
+state <- "Louisiana"
+protest_years <- c(2016)
+
+# Number of fatalities per million people - Louisiana
+createplot_propfat_state(state, protest_years, 15)
+
+# Growth rate of total fatalities - Louisiana
+createplot_growthrate_state(state, protest_years, 16)
+```
+<div style="margin-bottom:10px;"> </div>
+```{r louisiana_races, echo=FALSE, include=TRUE, message=FALSE, warning=FALSE, fig.align="center"}
+# Proportion of fatalities by race - Louisiana
+createplot_raceproportion_state(state, protest_years, 17)
+```
+
+<div style="margin-bottom:10px;"> </div>
+
+Protests occurred in Louisiana in 2016 after an African-American man was shot and killed by a police officer who thought that the victim was reaching for a gun, yet videos showed that the victim was not moving. Although a civil rights investigation into the shooting was opened, the officers involved were not charged. However, the officer who delivered the fatal shot was fired. The graphs show that there was actually a large spike in the proportion of African-American fatalities in 2017, along with an increase in total police fatalities for all races. Although the protests were non-violent, the police responded by being heavy-militarized and many protesters were arrested. This increase in tension may have been the cause of the spike in 2017, due to officers feeling more aggression towards people of color. After 2017, police-related fatalities started decreasing, a possible result of the tension passing and the protests being an event of the past. \ 
+
+### Minnesota
+```{r minnesota_growth, echo=FALSE, include=TRUE, message=FALSE, warning=FALSE, fig.show="hold", out.width="50%"}
+state <- "Minnesota"
+protest_years <- c(2016)
+
+# Number of fatalities per million people - Minnesota
+createplot_propfat_state(state, protest_years, 18)
+
+# Growth rate of total fatalities - Minnesota
+createplot_growthrate_state(state, protest_years, 19)
+
+```
+<div style="margin-bottom:10px;"> </div>
+```{r minnesota_races, echo=FALSE, include=TRUE, message=FALSE, warning=FALSE, fig.align="center"}
+# Proportion of fatalities by race - Minnesota
+createplot_raceproportion_state(state, protest_years, 20)
+```
+
+<div style="margin-bottom:10px;"> </div>
+
+Protests occurred in Minnesota in 2016 the day after the protests in Louisiana, and President Barack Obama gave a speech about both of the incidents in the following days. The protests in Minnesota were sparked by an African-American man being shot and killed by a police officer in his car when reaching in his glove compartment, even though he had calmly alerted the officer that he had a concealed weapon there that he was licensed to carry. The victim’s girlfriend was in the car at the time, and live-streamed the aftermath of the shooting on Facebook. However, the officer was found not guilty. These protests ended up spreading across the United States and were more violent - police were also injured. The police department in this city in Minnesota started receiving additional training in 2017. They also had plans for increased data transparency, body cams, and banned a training that taught officers to shoot if they felt threatened. However, they never followed through on the plans. There was a decrease in African-American and overall fatalities in 2017 and 2018 following the additional training, but it does not seem to be having a long-term effect as the police-related fatalities, particularly for African-Americans, spiked greatly again in 2019. \ 
+
+## Final Analysis
+### National Level
+The number of fatalities each year of each race has also increased every year from 2000-2013, with a drop of White fatalities, and a leveling off of fatalities for African-Americans and Hispanics after that. However, this is also around the time when there is an increase in “Race unspecified” reports, meaning that race has been less frequently reported, so it is hard to say if the number of fatalities each year actually decreased. \ 
+
+Although there is more White fatalities total, Native-American and African-American fatalities are over-represented compared to their population, with African-Americans having the highest proportion of fatalities. Over the past 20 years, the proportion of African-American fatalities has seen a steady increase, while the proportion of White fatalities has seen a small increase and then leveled off at around 2013. \ 
+
+In 2019 alone, African-Americans are the only group representing a higher percentage of fatalities than their portion of the population. African-Americans made up 13% of the population, yet 24% of the fatalities. Whites made up 76% of the population, yet only 36% of the fatalities. \ 
+
+Our graphs show that there was no trend in the number of police-related fatalities nationally in the years after protests occurred. This is most likely because police departments are regulated on a state- and city-level, and therefore, changes on this level would be insignificant on the national level. \ 
+
+### State Level
+In the states analyzed, the protests did not appear to have a long-term effect on systemic racism against African-Americans or police-related fatalities overall. The states of New York, Missouri, Maryland, and Minnesota all had a pattern of having a lower proportion of African-American fatalities for two years following the protests, however this proportion started increasing again after those couple of years. Although protests help to increase social awareness on the topic of police brutality, we can conclude from our data that they have not had any long-term effect on police brutality yet. \ 
+
+## Conclusion
+It is evident that police-related fatalities have been on a steady increase since 2000. While the data does not reveal direct evidence that police-fatalities are a result of systematic racism, it is still an important case to discuss and is relevant for further investigation. \ 
+
+Although we realize that the factors that systematically change how police behave are things such as policy changes and elections, we decided to look at protests since these bring social awareness and can put pressure on people in power to make changes, in addition to affect how people vote in order to bring in politicians that can change the police system. \ 
+
+The protests in 2020 that were the motivation for this project have been larger and more widespread than ever before. They have spread to all 50 states, along with other countries around the world. Due to these, there have been more changes at the local level. In the city of Los Angeles in California, they decided to cut the police department's budget and put that money into programs that help African-American communities. In the city of Minneapolis in Minnesota, they have decided to disband the police department. Additionally, all the officers involved in the death of George Floyd - the victim who motivated the protests this year - have all been arrested and charged with his murder. This is different from previous years when officers have not been convicted. It will be interesting to see in the coming years if the protests of 2020 will have any long-term effect on police brutality, due to the large amount of media attention and awareness of police methods they have brought forth. \
+
