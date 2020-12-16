@@ -36,6 +36,8 @@ library(stats)
 library(Hmisc)
 ```
 
+<iframe width="915" height="515" src="https://www.youtube.com/watch?v=xJ9KLY8WT6w&feature=youtu.be" frameborder="0" allowfullscreen></iframe>
+
 ## Introduction
 This report presents an analysis of data on the history of police violence in the United States from the past 20 years (2000-2019). Topics discussed include development of police violence in general and between different races, as well as a state-specific analysis which includes the occurrence of relevant protests in this time period. \ 
 
