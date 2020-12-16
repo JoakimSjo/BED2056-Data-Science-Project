@@ -1,8 +1,8 @@
-name: Publish index
+name: Publish report
 
 on:
   workflow_run:
-    workflows: ["render report"]
+    workflows: ["Render report"]
     types:
       - completed
 

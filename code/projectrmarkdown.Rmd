@@ -4,7 +4,7 @@ date: "`r format(Sys.time(), '%B %d, %Y')`"
 author:
   Kamilla Bentsen,
   Joakim Alslie, and
-  Joakim Sjohaug and runner
+  Joakim Sjohaug
 output: html_document
 ---
 
