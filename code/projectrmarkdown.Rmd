@@ -4,7 +4,7 @@ date: "`r format(Sys.time(), '%B %d, %Y')`"
 author:
   Kamilla Bentsen,
   Joakim Alslie, and
-  Joakim Sjohaug
+  Joakim Sjohaug and runner
 output: html_document
 ---
 
@@ -12,16 +12,16 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 # Un-comment and install packages if not already installed
-#install.packages("RCurl")
-#install.packages("tidyverse")
-#install.packages("lubridate")
-#install.packages("gsheet")
-#install.packages("raster")
-#install.packages("dplyr")
-#install.packages("spData")
-#install.packages("ggplot2")
-#install.packages("stats")
-#install.packages("Hmisc")
+install.packages("RCurl")
+install.packages("tidyverse")
+install.packages("lubridate")
+install.packages("gsheet")
+install.packages("raster")
+install.packages("dplyr")
+install.packages("spData")
+install.packages("ggplot2")
+install.packages("stats")
+install.packages("Hmisc")
 
 # Open needed libraries
 library(RCurl)
@@ -74,16 +74,15 @@ In this data science project, we have used an experimental method which Gaussian
 4. _Analyze_ - explore, inspect, and model the data to discover patterns and relationships previously unknown. \ 
 5. _Conclude_ - with the results from the previous steps in hand, conclude and draw a reliable and valuable conclusion from the results. \ 
 6. _Communicate_ - the essential step. Formulate the findings in such a way that readers understand the conclusions obtained from the data \ 
+The method has been applied through workshops in the initial phase of the project resolving around project decision and what questions to be raised. This has been followed by collection, interpretation and review of data sets, to ensure quality and relevance. \ 
 
-Applying this method, the group started with a workshop deciding the project and raising questions we wanted to answer with this project. Data sets were then gathered, understood, and reviewed to ensure that they were of the right quality and relevant to the project. \ 
+The following stage of the development include data manipulation, such that it is ready for analysis. The stage also includes altering the population data sets to create a new data set grouped by race and state only such that the total population for each race is obtained in each state. The numerical representations of states is also replaced, e.g., "36" to "NY" for "New York" to make it more intuitive when examining the data set. A year column is appended on the fatality data set, and the date and race columns are altered to reflect the population data set in terms of the mentioned column values. \ 
 
-The group then started a process where the data was modified to be ready for analysis. In this stage, we had to alter the population data sets to create a new data set grouped by race and state only such that the total population for each race was obtained in each state. Also, we replaced numerical representations of states, e.g., "36" to "NY" for "New York" to make it more intuitive when examining the data set. A year column was appended on the fatality data set, and the date and race columns were altered to reflect the population data set in terms of the mentioned column values. \ 
+With the data sets ready for analysis, data frames that held data to answer the questions mentioned in the report's introduction are created. Different ways to showcase the data through pie charts, bar and graph plots are also explored. Different conclusions to the mentioned questions can be made from these plots. \ 
 
-With the data sets ready for analysis, the group started to create data frames that held data to answer the questions mentioned in the report's introduction. The group explored the different ways to showcase the data through pie charts, bar and graph plots. From the plots, the group draws different conclusions to the mentioned questions. \ 
+The findings are communicated through a presentation for the entire class. This leads to feedback on raising questions to discover unknown patterns from the data. E.g., look at how the fatalities growth rates changed based on protests and president election results. The final findings is communicated through a screen cast. A link is provided in the projects folder. \ 
 
-A presentation was held for the entire class showcasing the results and how the results were obtained. The group got feedback on questions we could ask to discover unknown patterns from the data. E.g., one idea from the feedback was to look at how the fatalities growth rates changed based on protests and president election results. \ 
-
-The group argues that this method is reliable because it challenges the group to define concrete questions to answer early in the process and encourage them to understand the data sets used in the project. Besides, the process is an iterative process that enables seeking feedback and takes action from the input. \ 
+This method is reliable because it challenges the group to define concrete questions to answer early in the process and encourage them to understand the data sets used in the project. Besides, the process is an iterative process that enables seeking feedback and takes action from the input. \ 
 
 ## Data
 This project has two public main sources for information, Fatal Encounters and United States Census Bureau. In this section a small description of each source and data set is given, and we show how we downloaded and manipulated the data frames.  \ 
