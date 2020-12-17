@@ -68,7 +68,7 @@ Our analysis aims to answer the following questions for the nation as a whole, a
 For the United States and each state we examine, we analyze if there is a change in the trend for each of these factors in the years following each protest. \ 
 
 ### Experimental Method
-In this data science project, we have used an experimental method which Gaussian Engineering names "The Data Scientific Method" in their article^[https://www.gauseng.com/single-post/2019/02/14/A-Data-Scientific-Method] about experimental methods for data science projects. The Data Scientific Method is an iterative process that consists of 6 steps. Iterative means that after the six steps are done, it encourages one to seek feedback and act upon it by repeating the process again and even multiple times. The six stages of the process are: \ 
+The Data Scientific Method is an experimental method named by Gaussian Engineering in their article^[https://www.gauseng.com/single-post/2019/02/14/A-Data-Scientific-Method] about experimental methods for data science projects. The Data Scientific Method is an iterative process consisting of 6 steps. It is iterative in the sense that after the six steps are done, it encourages one to seek feedback and act upon it by repeating the process again, up to multiple times. The six stages of the process are: \ 
 
 1. _Identify_ - formulate the goal of the data science project and plan the project. \ 
 2. _Understand_ - get a feel of the data sets in question and ensure their quality. \ 
@@ -84,7 +84,7 @@ With the data sets ready for analysis, data frames that held data to answer the 
 
 The findings are communicated through a presentation for the entire class. This leads to feedback on raising questions to discover unknown patterns from the data. E.g., look at how the fatalities growth rates changed based on protests and president election results. The final findings is communicated through a screen cast. A link is provided in the projects folder. \ 
 
-This method is reliable because it challenges the group to define concrete questions to answer early in the process and encourage them to understand the data sets used in the project. Besides, the process is an iterative process that enables seeking feedback and takes action from the input. \ 
+This method is reliable because it challenges the group to define concrete questions to answer early in the process and encourage them to understand the data sets used in the project. Besides, the process is an iterative process that enables seeking feedback and takes action from the input. This method is therefore applied. \ 
 
 ## Data
 This project has two public main sources for information, Fatal Encounters and United States Census Bureau. In this section a small description of each source and data set is given, and we show how we downloaded and manipulated the data frames.  \ 
@@ -92,7 +92,7 @@ This project has two public main sources for information, Fatal Encounters and U
 #### Fatal Encounters
 Fatal Encounters is an organization that aims to create a national search-able database about police brutality in the USA^[https://fatalencounters.org/]. They collect information in three ways; paid researchers, public records requests and crowd-sourced data. The data is available for anyone through an external link on their website^[https://docs.google.com/spreadsheets/d/1dKmaV_JiWcG8XBoRgP8b4e9Eopkpgt7FL7nyspvzAsE/edit#gid=0]. Each entry in the data set contains many details and the most important for this project is: location, race, state, and year. \ 
 
-Data about fatalities was downloaded directly from the Fatal Encounters website. Since this is a Google document that is updated weekly, the data frame will be updated with the most recent fatalities each time the code is run. The data frame includes a column with the date of each fatality, which we used to add a column containing just the year, since we do not do our analysis on a finer-scale than the year. Since the year 2020 is not over yet, we exclude this from our analysis and only use fatalities that occurred before 2020. We also updated the names of races and states to assure that we use the same names for these variables in this data frame and the population data frame.
+Data about fatalities is downloaded directly from the Fatal Encounters website. Since this is a Google document that is updated weekly, the data frame will be updated with the most recent fatalities each time the code runs. The data frame includes a column with the date of each fatality, which is used to add a column containing just the year. The reason for this is that police-related fatalities are going to be grouped by the year. The year of 2020 is not over yet, and it is therefore excluded from the analysis. The names of races and states are also updated to assure a consistent naming convention for the columns in this data frame and the population data frame.
 ```{r fatality_data, message=FALSE, warning=FALSE}
 # Download data frame from fatalencounters.org
 df_fatalities_2000to2019 <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1dKmaV_JiWcG8XBoRgP8b4e9Eopkpgt7FL7nyspvzAsE/edit#gid=0")
@@ -172,9 +172,9 @@ head(df_fatalities_2000to2019_edited) %>%
 #### United States Census Bureau
 The bureau provides data sets about the population in the USA. Each decade a national census is completed, and a data set is made available afterward. Thus, we only have one decade with the USA's actual population, and the last decade is a data set with a population estimate for each year. A detailed description^[https://www2.census.gov/programs-surveys/popest/technical-documentation/file-layouts/2010-2019/sc-est2019-alldata6.pdf] about the data set is provided by the bureau. \ 
 
-Both data sets (actual and estimated population) groups the population by age, gender, race, and state. For our analysis, the total population of each race is the most interesting data point. \ 
+Both data sets (actual and estimated population) groups the population by age, gender, race, and state. For this analysis, the total population of each race is the most interesting data point. \ 
 
-Two data frames were downloaded from the United States Census Bureau, one for 2000-2010 and one for 2010-2019. These had the same format so they were edited in the same manner. We filtered out variables that caused duplicates in the total population estimate. For example, when the SEX variable was equal to 0 it showed the population including both males and females, when it was equal to 1 it included only males, and when equal to 2 it included only females. Therefore, we only wanted to include the rows where SEX was equal to 0, so not every person was counted twice when we find the sum of the population column. This was a problem while we were doing our analyses and found that the total population for each year was double what it should be, so we had to come back to update the data frame. We then merged these two data frames into one that included all 20 years. We then updated the names of races and states to match the fatality data frame.
+Two data frames were downloaded from the United States Census Bureau, one for 2000-2010 and one for 2010-2019. They have the same format so they are edited in the same manner. The variables that causing duplicates in the total population estimate are also filtered out. For example, when the SEX variable is equal to 0 it shows the population including both males and females, when it is equal to 1 it includes only males, and when equal to 2 it includes only females. Therefore, only the rows where SEX is equal to 0 is included. These two data frames are then merged into one that includes all 20 years. The names of races and states are finally updated to match the fatality data frame.
 ```{r population_data, message=FALSE, warning=FALSE}
 # Download data frames directly from the United States Census Bureau
 df_population_2000to2010 <- read.csv(text = getURL("https://www2.census.gov/programs-surveys/popest/datasets/2000-2010/intercensal/county/co-est00int-sexracehisp.csv"))
@@ -291,7 +291,7 @@ Information about when protests occurred and the background behind these protest
 The following analysis is done on a national level, meaning the number of fatalities throughout the entire United States is taken into account, regardless of geographical position within the country itself. This is necessary to do to get a good overview of the development of police violence before analyzing more specific developments within specific states. \ 
 
 #### Fatality Trend
-The first graph shows the number of fatalities per million people in the United States from 2000-2019. This was done by first creating a data frame that included the total population in the United States each year and the total number of fatalities for each year. Then, the proportion of fatalities per million people for each year was calculated by dividing the number of fatalities by the population and multiplying by a million. 
+The first graph shows the number of fatalities per million people in the United States from 2000-2019. This is done by first creating a data frame that includes the total population in the United States each year and the total number of fatalities for each year. Then, the proportion of fatalities per million people for each year is calculated by dividing the number of fatalities by the population and multiplying by a million. 
 ```{r code_fig1, message=FALSE, warning=FALSE}
 
 # Function to create a data frame with the proportion of total fatalities to the total population for each year
@@ -340,7 +340,7 @@ plot_proportion_fatalities <- df_totalpropfat %>%
   theme(plot.caption = element_text(hjust = 0))
 ```
 
-The second graph shows the growth rate of the number of police fatalities since the previous year. This was done by finding the change in the number of fatalities per million people since the previous year, and the growth rate for each year was calculated by dividing the change by the number of fatalities per million in the previous year, and then multiplying by 100 to obtain the percentage. 
+The second graph shows the growth rate of the number of police fatalities since the previous year. This is done by finding the change in the number of fatalities per million people since the previous year, and the growth rate for each year is calculated by dividing the change by the number of fatalities per million in the previous year, and finally multiplying by 100 to obtain the percentage. 
 ```{r code_fig2, message=FALSE, warning=FALSE}
 # Plot: Fatality growth rate
 plot_growthrate <- df_totalpropfat %>%
@@ -403,7 +403,7 @@ plot_total_fatalities_race_line
 
 The figure shows that the White, African-American and the Hispanic populations have an increasing number of cases of police-related fatalities from the past 20 years. The Middle Eastern, Native American and Asian population has, however, remained low and stable. It shows that the White is the race with the highest number of fatalities, followed by African-American and Hispanic (Fig. 3). The protests in 2006 and 2011 appear to have had no effect on the number of fatalities. During the period of 2014-2016 when there were protests, the number of fatalities for Whites, African-Americans and Hispanic appear to become more stable rather than increase. However, this is around the same time when the number of "Race unspecified" cases increases, meaning that the victims' race is less reported. This is unsettling because the cases of the most represented races starts to flatten out at the same time, which makes it more difficult to distinguish between the different races for that period. This also makes it hard to determine if the protests had any part in stopping the increase in fatalities, since there are many victims whose race is unknown. \
 
-The next graph examines the number of fatalities per million people of each race. This was done by finding the total number of fatalities by race and the total population of each race. The number of fatalities per million people was calculated by dividing the number of fatalities by the population of a specific race, and multiplying by a million. This graph only includes White, African-American, Asian, and Native American since those are the only races that are included in both the Fatality and the Population data frame. \
+The next graph examines the number of fatalities per million people of each race. This is done by finding the total number of fatalities by race and the total population of each race. The number of fatalities per million people is calculated by dividing the number of fatalities by the population of a specific race, and multiplying by a million. This graph only includes White, African-American, Asian, and Native American since those are the only races that are included in both the Fatality and the Population data frame. \
 ```{r code_pop_races}
 # Function to create a data frame including the number of fatalities per million people by race
 make_dataframe_by_race_year <- function(){
@@ -536,7 +536,7 @@ The following analysis is done for specific states in the United States where la
 
 The plots for each state are similar to the plots created on the national level. For each state we focus on the number of fatalities per million people and the growth rate, along with the number of fatalities per million by race. Many of the states were lacking in data for Asian, Hispanic, and Native-American fatalities or population, so we place our focus on only comparing Whites and African-Americans. All of the protests we cover were all protesting against systematic racism and police brutality against African-Americans, therefore, it is fitting to focus on them. We discuss the protests that have occurred in each state, and determine if the protests had any effect on police-related fatalities in that state. \
 
-To find the number of fatalities per million people in each state, we found the total number of fatalities and population grouped by state. We found the number of fatalities per state divided by that state's population, and multiplied it by a million. The growth rate was found using the same method as before, except with only the data from a specific state.
+To find the number of fatalities per million people in each state, the total number of fatalities and population grouped by state is found. The number of fatalities per state divided by that state's population is also found, and multiplied by a million. The growth rate is found using the same method as before, except with the data from the specified state.
 ```{r code_state_plots, message=FALSE, warning=FALSE}
 # Function to create a data frame with the number of fatalities per million grouped by year and state
 make_dataframe_by_year_state <- function(){
