@@ -25,4 +25,4 @@ jobs:
           mv index.html docs
           git add docs/index.html
           git commit -m "rebuild projectrmarkdown.Rmd" || echo "No changes to commit"
-          git push origin main || echo "No changes to commit"
+          git push origin github-pages || echo "No changes to commit"
