@@ -8,6 +8,16 @@ author:
 output: html_document
 ---
 
+<!--
+Data Sources:
+
+Police-Related fatality data set from Fatal Encounters: https://docs.google.com/spreadsheets/d/1dKmaV_JiWcG8XBoRgP8b4e9Eopkpgt7FL7nyspvzAsE/edit#gid=0
+
+Population data set from the United States Census Bureau:
+2000-2010: https://www2.census.gov/programs-surveys/popest/datasets/2000-2010/intercensal/county/co-est00int-sexracehisp.csv
+2010-2019: https://www2.census.gov/programs-surveys/popest/tables/2010-2019/state/asrh/sc-est2019-alldata6.csv
+-->
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
@@ -283,7 +293,7 @@ head(df_population_2000to2019) %>%
 ```
 
 #### Protests
-Information about when protests occurred and the background behind these protests was obtained from an article from Bloomberg News written in June 2020.^[https://www.bloomberg.com/news/articles/2020-06-09/a-history-of-protests-against-police-brutality].
+Information about when protests occurred and the background behind these protests is obtained from an article from Bloomberg News written in June 2020.^[https://www.bloomberg.com/news/articles/2020-06-09/a-history-of-protests-against-police-brutality].
 
 ## Analysis 
 ### National-Level Analysis
